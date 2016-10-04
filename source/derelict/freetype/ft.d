@@ -27,33 +27,19 @@ DEALINGS IN THE SOFTWARE.
 */
 module derelict.freetype.ft;
 
-public {
-    import derelict.freetype.types;
-    import derelict.freetype.functions;
-}
+import derelict.util.loader,
+       derelict.util.system;
 
-private {
-    import derelict.util.loader;
-    import derelict.util.system;
+public
+import derelict.freetype.functions,
+       derelict.freetype.types;
 
-    static if(Derelict_OS_Windows)
-        enum libNames = "freetype.dll,libfreetype.dll,libfreetype-6.dll";
-    else static if(Derelict_OS_Mac)
-        enum libNames = "libfreetype.dylib,libfreetype.6.dylib,libfreetype.6.3.16.dylib,/usr/X11/lib/libfreetype.dylib,/usr/X11/lib/libfreetype.6.dylib,/usr/X11/lib/libfreetype.6.3.16.dylib,/opt/X11/lib/libfreetype.dylib";
-    else static if(Derelict_OS_Android)
-        enum libNames = "libft2.so,libfreetype.so.6,libfreetype.so";
-    else static if(Derelict_OS_Posix)
-        enum libNames = "libfreetype.so.6,libfreetype.so";
-    else
-        static assert(0, "Need to implement FreeType libNames for this operating system.");
-}
+class DerelictFTLoader : SharedLibLoader
+{
+    this() { super(libNames); }
 
-class DerelictFTLoader : SharedLibLoader {
-    public this() {
-        super(libNames);
-    }
-
-    protected override void loadSymbols() {
+    protected override void loadSymbols()
+    {
         bindFunc(cast(void**)&FT_Init_FreeType, "FT_Init_FreeType");
         bindFunc(cast(void**)&FT_Done_FreeType, "FT_Done_FreeType");
         bindFunc(cast(void**)&FT_New_Face, "FT_New_Face");
@@ -276,6 +262,19 @@ class DerelictFTLoader : SharedLibLoader {
 
 __gshared DerelictFTLoader DerelictFT;
 
-shared static this() {
+shared static this()
+{
     DerelictFT = new DerelictFTLoader();
 }
+
+private:
+    static if(Derelict_OS_Windows)
+        enum libNames = "freetype.dll,libfreetype.dll,libfreetype-6.dll";
+    else static if(Derelict_OS_Mac)
+        enum libNames = "libfreetype.dylib,libfreetype.6.dylib,libfreetype.6.3.16.dylib,/usr/X11/lib/libfreetype.dylib,/usr/X11/lib/libfreetype.6.dylib,/usr/X11/lib/libfreetype.6.3.16.dylib,/opt/X11/lib/libfreetype.dylib";
+    else static if(Derelict_OS_Android)
+        enum libNames = "libft2.so,libfreetype.so.6,libfreetype.so";
+    else static if(Derelict_OS_Posix)
+        enum libNames = "libfreetype.so.6,libfreetype.so";
+    else
+        static assert(0, "Need to implement FreeType libNames for this operating system.");
